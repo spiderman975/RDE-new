@@ -1,0 +1,78 @@
+2025-03-09 21:21:13,720 RDE INFO: Using 1 GPUs
+2025-03-09 21:21:13,721 RDE INFO: Namespace(alpha=0.9
+ batch_size=64
+ beta=0.999
+ bias_lr_factor=2.0
+ cmt_depth=4
+ dataset_name='RSTPReid'
+ distributed=False
+ eval_period=1
+ gamma=0.1
+ img_aug=True
+ img_size=(384
+ 128)
+ local_rank=0
+ log_period=100
+ loss_names='TAL+sr0.3_tau0.015_margin0.1_n0.2'
+ lr=1e-05
+ lr_factor=5.0
+ lrscheduler='cosine'
+ margin=0.1
+ masked_token_rate=0.8
+ masked_token_unchanged_rate=0.1
+ milestones=(20
+ 50)
+ momentum=0.9
+ name='RDE'
+ noisy_file='./noiseindex/RSTPReid_0.2.npy'
+ noisy_rate=0.2
+ num_epoch=60
+ num_instance=4
+ num_workers=8
+ optimizer='Adam'
+ output_dir='run_logs/RSTPReid/20250309_212113_RDE_TAL+sr0.3_tau0.015_margin0.1_n0.2'
+ power=0.9
+ pretrain_choice='ViT-B/16'
+ resume=False
+ resume_ckpt_file=''
+ root_dir='./datas'
+ sampler='random'
+ select_ratio=0.3
+ stride_size=16
+ target_lr=0
+ tau=0.015
+ temperature=0.02
+ test_batch_size=512
+ text_length=77
+ training=True
+ txt_aug=True
+ val_dataset='test'
+ vocab_size=49408
+ warmup_epochs=5
+ warmup_factor=0.1
+ warmup_method='linear'
+ weight_decay=4e-05
+ weight_decay_bias=0.0)
+2025-03-09 21:21:13,927 RDE.dataset INFO: => RSTPReid Images and Captions are loaded
+2025-03-09 21:21:13,927 RDE.dataset INFO: RSTPReid Dataset statistics:
+2025-03-09 21:21:13,928 RDE.dataset INFO: 
++--------+------+--------+----------+
+| subset | ids  | images | captions |
++--------+------+--------+----------+
+| train  | 3701 | 18505  |  37010   |
+|  test  | 200  |  1000  |   2000   |
+|  val   | 200  |  1000  |   2000   |
++--------+------+--------+----------+
+2025-03-09 21:21:13,936 RDE.dataset INFO: => Load noisy index from ./noiseindex/RSTPReid_0.2.npy
+2025-03-09 21:21:13,981 RDE.dataset INFO: [1, 1, 0, 0, 1, 1, 1, 1, 0, 1]
+2025-03-09 21:21:13,984 RDE.dataset INFO: =>Noisy rate: 0.2,  clean pairs: 29610, noisy pairs: 7400, total pairs: 37010
+2025-03-09 21:21:16,511 RDE INFO: Total params: 153M
+2025-03-09 21:21:18,333 RDE.train INFO: start training
+2025-03-09 21:21:21,212 RDE.train INFO: compute loss batch 0
+2025-03-09 21:22:01,935 RDE.train INFO: compute loss batch 100
+2025-03-09 21:22:47,627 RDE.train INFO: compute loss batch 200
+2025-03-09 21:23:35,416 RDE.train INFO: compute loss batch 300
+2025-03-09 21:24:21,882 RDE.train INFO: compute loss batch 400
+2025-03-09 21:25:04,397 RDE.train INFO: compute loss batch 500
+2025-03-09 21:25:41,627 RDE.train INFO: 
+Fitting GMM ...

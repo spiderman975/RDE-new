@@ -1,0 +1,82 @@
+2025-03-03 22:24:25,288 RDE INFO: Using 1 GPUs
+2025-03-03 22:24:25,289 RDE INFO: Namespace(alpha=0.9
+ batch_size=64
+ beta=0.999
+ bias_lr_factor=2.0
+ cmt_depth=4
+ dataset_name='RSTPReid'
+ distributed=False
+ eval_period=1
+ gamma=0.1
+ img_aug=True
+ img_size=(384
+ 128)
+ local_rank=0
+ log_period=100
+ loss_names='TAL+sr0.3_tau0.015_margin0.1_n0.0'
+ lr=1e-05
+ lr_factor=5.0
+ lrscheduler='cosine'
+ margin=0.1
+ masked_token_rate=0.8
+ masked_token_unchanged_rate=0.1
+ milestones=(20
+ 50)
+ momentum=0.9
+ name='RDE'
+ noisy_file='./noiseindex/RSTPReid_0.0.npy'
+ noisy_rate=0.0
+ num_epoch=60
+ num_instance=4
+ num_workers=8
+ optimizer='Adam'
+ output_dir='run_logs/RSTPReid/20250303_222425_RDE_TAL+sr0.3_tau0.015_margin0.1_n0.0'
+ power=0.9
+ pretrain_choice='ViT-B/16'
+ resume=False
+ resume_ckpt_file=''
+ root_dir='./datas'
+ sampler='random'
+ select_ratio=0.3
+ stride_size=16
+ target_lr=0
+ tau=0.015
+ temperature=0.02
+ test_batch_size=512
+ text_length=77
+ training=True
+ txt_aug=True
+ val_dataset='test'
+ vocab_size=49408
+ warmup_epochs=5
+ warmup_factor=0.1
+ warmup_method='linear'
+ weight_decay=4e-05
+ weight_decay_bias=0.0)
+2025-03-03 22:24:25,488 RDE.dataset INFO: => RSTPReid Images and Captions are loaded
+2025-03-03 22:24:25,489 RDE.dataset INFO: RSTPReid Dataset statistics:
+2025-03-03 22:24:25,491 RDE.dataset INFO: 
++--------+------+--------+----------+
+| subset | ids  | images | captions |
++--------+------+--------+----------+
+| train  | 3701 | 18505  |  37010   |
+|  test  | 200  |  1000  |   2000   |
+|  val   | 200  |  1000  |   2000   |
++--------+------+--------+----------+
+2025-03-03 22:24:25,504 RDE.dataset INFO: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+2025-03-03 22:24:25,508 RDE.dataset INFO: =>Noisy rate: 0.0,  clean pairs: 37010, noisy pairs: 0, total pairs: 37010
+2025-03-03 22:25:34,142 RDE INFO: Total params: 153M
+2025-03-03 22:25:39,483 RDE.train INFO: start training
+2025-03-03 22:25:42,004 RDE.train INFO: compute loss batch 0
+2025-03-03 22:26:04,934 RDE.train INFO: compute loss batch 100
+2025-03-03 22:26:28,650 RDE.train INFO: compute loss batch 200
+2025-03-03 22:26:52,204 RDE.train INFO: compute loss batch 300
+2025-03-03 22:27:15,878 RDE.train INFO: compute loss batch 400
+2025-03-03 22:27:40,906 RDE.train INFO: compute loss batch 500
+2025-03-03 22:27:58,678 RDE.train INFO: 
+Fitting GMM ...
+2025-03-03 22:32:59,563 RDE.train INFO: Epoch[1] Iteration[100/579], loss: 15.9676, bge_loss: 7.5540, tse_loss: 8.4137, Base Lr: 1.00e-06
+2025-03-03 22:37:58,310 RDE.train INFO: Epoch[1] Iteration[200/579], loss: 15.2858, bge_loss: 7.2497, tse_loss: 8.0362, Base Lr: 1.00e-06
+2025-03-03 22:43:00,043 RDE.train INFO: Epoch[1] Iteration[300/579], loss: 14.9514, bge_loss: 7.1295, tse_loss: 7.8219, Base Lr: 1.00e-06
+2025-03-03 22:48:06,131 RDE.train INFO: Epoch[1] Iteration[400/579], loss: 14.7267, bge_loss: 7.0583, tse_loss: 7.6684, Base Lr: 1.00e-06
+2025-03-03 22:53:05,839 RDE.train INFO: Epoch[1] Iteration[500/579], loss: 14.5543, bge_loss: 7.0093, tse_loss: 7.5449, Base Lr: 1.00e-06

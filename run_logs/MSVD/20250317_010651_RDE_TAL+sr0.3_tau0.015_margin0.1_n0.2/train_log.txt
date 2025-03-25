@@ -1,0 +1,174 @@
+2025-03-17 01:06:51,647 RDE INFO: Using 1 GPUs
+2025-03-17 01:06:51,647 RDE INFO: Namespace(alpha=0.9
+ batch_size=16
+ beta=0.999
+ bias_lr_factor=2.0
+ cmt_depth=4
+ dataset_name='MSVD'
+ distributed=False
+ eval_period=1
+ gamma=0.1
+ img_aug=True
+ img_size=(384
+ 128)
+ local_rank=0
+ log_period=100
+ loss_names='TAL+sr0.3_tau0.015_margin0.1_n0.2'
+ lr=1e-05
+ lr_factor=5.0
+ lrscheduler='cosine'
+ margin=0.1
+ masked_token_rate=0.8
+ masked_token_unchanged_rate=0.1
+ milestones=(20
+ 50)
+ momentum=0.9
+ name='RDE'
+ noisy_file='./noiseindex/MSVD_0.2.npy'
+ noisy_rate=0.2
+ num_epoch=60
+ num_instance=4
+ num_workers=1
+ optimizer='Adam'
+ output_dir='run_logs/MSVD/20250317_010651_RDE_TAL+sr0.3_tau0.015_margin0.1_n0.2'
+ power=0.9
+ pretrain_choice='ViT-B/16'
+ resume=False
+ resume_ckpt_file=''
+ root_dir='./datas'
+ sampler='random'
+ select_ratio=0.3
+ stride_size=16
+ target_lr=0
+ tau=0.015
+ temperature=0.02
+ test_batch_size=512
+ text_length=77
+ training=True
+ txt_aug=True
+ val_dataset='test'
+ video_frame_rate=1
+ vocab_size=49408
+ warmup_epochs=5
+ warmup_factor=0.1
+ warmup_method='linear'
+ weight_decay=4e-05
+ weight_decay_bias=0.0)
+2025-03-17 01:06:51,807 RDE.dataset INFO: => MSVD Videos and Captions are loaded
+2025-03-17 01:06:51,808 RDE.dataset INFO: MSVD Dataset statistics:
+2025-03-17 01:06:51,809 RDE.dataset INFO: 
++--------+------+--------+----------+
+| subset | ids  | images | captions |
++--------+------+--------+----------+
+| train  | 1970 |  1970  |  80827   |
+|  test  |  0   |   0    |    0     |
+|  val   |  0   |   0    |    0     |
++--------+------+--------+----------+
+2025-03-17 01:06:51,833 RDE.dataset INFO: => Load noisy index from ./noiseindex/MSVD_0.2.npy
+2025-03-17 01:06:52,007 RDE.dataset INFO: [1, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+2025-03-17 01:06:52,016 RDE.dataset INFO: =>Noisy rate: 0.2,  clean pairs: 64663, noisy pairs: 16164, total pairs: 80827
+2025-03-17 01:06:57,981 RDE INFO: Total params: 153M
+2025-03-17 01:07:05,377 RDE.train INFO: start training
+2025-03-17 01:07:13,471 RDE.train INFO: Batch 0: lossA - min: 0.1079, max: 0.3107, mean: 0.2523
+2025-03-17 01:07:13,476 RDE.train INFO: Batch 0: lossB - min: 0.2693, max: 0.3110, mean: 0.2884
+2025-03-17 01:07:13,487 RDE.train INFO: compute loss batch 0
+2025-03-17 01:07:20,819 RDE.train INFO: Batch 1: lossA - min: 0.2140, max: 0.3248, mean: 0.2707
+2025-03-17 01:07:20,825 RDE.train INFO: Batch 1: lossB - min: 0.2643, max: 0.3042, mean: 0.2850
+2025-03-17 01:07:28,669 RDE.train INFO: Batch 2: lossA - min: 0.1615, max: 0.2952, mean: 0.2707
+2025-03-17 01:07:28,684 RDE.train INFO: Batch 2: lossB - min: 0.2599, max: 0.2989, mean: 0.2817
+2025-03-17 01:07:31,901 RDE.train INFO: Batch 3: lossA - min: 0.2001, max: 0.3310, mean: 0.2675
+2025-03-17 01:07:31,902 RDE.train INFO: Batch 3: lossB - min: 0.2510, max: 0.3033, mean: 0.2831
+2025-03-17 01:07:37,167 RDE.train INFO: Batch 4: lossA - min: 0.0617, max: 0.3051, mean: 0.2524
+2025-03-17 01:07:37,168 RDE.train INFO: Batch 4: lossB - min: 0.2517, max: 0.3109, mean: 0.2867
+2025-03-17 01:07:39,367 RDE.train INFO: Batch 5: lossA - min: 0.1522, max: 0.3057, mean: 0.2470
+2025-03-17 01:07:39,395 RDE.train INFO: Batch 5: lossB - min: 0.2686, max: 0.3043, mean: 0.2836
+2025-03-17 01:07:42,096 RDE.train INFO: Batch 6: lossA - min: 0.1442, max: 0.3190, mean: 0.2397
+2025-03-17 01:07:42,099 RDE.train INFO: Batch 6: lossB - min: 0.2642, max: 0.3100, mean: 0.2874
+2025-03-17 01:07:45,791 RDE.train INFO: Batch 7: lossA - min: 0.1402, max: 0.3044, mean: 0.2617
+2025-03-17 01:07:45,792 RDE.train INFO: Batch 7: lossB - min: 0.2735, max: 0.3073, mean: 0.2856
+2025-03-17 01:07:51,880 RDE.train INFO: Batch 8: lossA - min: 0.1502, max: 0.3655, mean: 0.2495
+2025-03-17 01:07:51,881 RDE.train INFO: Batch 8: lossB - min: 0.2556, max: 0.3216, mean: 0.2868
+2025-03-17 01:08:00,211 RDE.train INFO: Batch 9: lossA - min: 0.2255, max: 0.2994, mean: 0.2622
+2025-03-17 01:08:00,212 RDE.train INFO: Batch 9: lossB - min: 0.2681, max: 0.3158, mean: 0.2855
+2025-03-17 01:08:03,702 RDE.train INFO: Batch 10: lossA - min: 0.2035, max: 0.3143, mean: 0.2448
+2025-03-17 01:08:03,703 RDE.train INFO: Batch 10: lossB - min: 0.2524, max: 0.2990, mean: 0.2838
+2025-03-17 01:08:07,354 RDE.train INFO: Batch 11: lossA - min: 0.0885, max: 0.3209, mean: 0.2529
+2025-03-17 01:08:07,573 RDE.train INFO: Batch 11: lossB - min: 0.2650, max: 0.3026, mean: 0.2859
+2025-03-17 01:08:13,674 RDE.train INFO: Batch 12: lossA - min: 0.0864, max: 0.3236, mean: 0.2523
+2025-03-17 01:08:13,676 RDE.train INFO: Batch 12: lossB - min: 0.2698, max: 0.3053, mean: 0.2879
+2025-03-17 01:08:18,780 RDE.train INFO: Batch 13: lossA - min: 0.2014, max: 0.3239, mean: 0.2629
+2025-03-17 01:08:18,787 RDE.train INFO: Batch 13: lossB - min: 0.2647, max: 0.3168, mean: 0.2873
+2025-03-17 01:08:23,202 RDE.train INFO: Batch 14: lossA - min: 0.1817, max: 0.3318, mean: 0.2618
+2025-03-17 01:08:23,203 RDE.train INFO: Batch 14: lossB - min: 0.2588, max: 0.3091, mean: 0.2849
+2025-03-17 01:08:25,797 RDE.train INFO: Batch 15: lossA - min: 0.1429, max: 0.3288, mean: 0.2574
+2025-03-17 01:08:25,798 RDE.train INFO: Batch 15: lossB - min: 0.2666, max: 0.3047, mean: 0.2874
+2025-03-17 01:08:32,183 RDE.train INFO: Batch 16: lossA - min: 0.2010, max: 0.3283, mean: 0.2796
+2025-03-17 01:08:32,188 RDE.train INFO: Batch 16: lossB - min: 0.2692, max: 0.3055, mean: 0.2826
+2025-03-17 01:08:35,935 RDE.train INFO: Batch 17: lossA - min: 0.0000, max: 0.3305, mean: 0.2484
+2025-03-17 01:08:35,941 RDE.train INFO: Batch 17: lossB - min: 0.2621, max: 0.3057, mean: 0.2816
+2025-03-17 01:08:44,090 RDE.train INFO: Batch 18: lossA - min: 0.2064, max: 0.3397, mean: 0.2728
+2025-03-17 01:08:44,093 RDE.train INFO: Batch 18: lossB - min: 0.2675, max: 0.2996, mean: 0.2823
+2025-03-17 01:08:52,957 RDE.train INFO: Batch 19: lossA - min: 0.2207, max: 0.3218, mean: 0.2665
+2025-03-17 01:08:52,958 RDE.train INFO: Batch 19: lossB - min: 0.2508, max: 0.3087, mean: 0.2873
+2025-03-17 01:08:56,325 RDE.train INFO: Batch 20: lossA - min: 0.1758, max: 0.3193, mean: 0.2666
+2025-03-17 01:08:56,333 RDE.train INFO: Batch 20: lossB - min: 0.2515, max: 0.3166, mean: 0.2937
+2025-03-17 01:09:01,563 RDE.train INFO: Batch 21: lossA - min: 0.2043, max: 0.3105, mean: 0.2564
+2025-03-17 01:09:01,574 RDE.train INFO: Batch 21: lossB - min: 0.2461, max: 0.3090, mean: 0.2861
+2025-03-17 01:09:11,381 RDE.train INFO: Batch 22: lossA - min: 0.1778, max: 0.3165, mean: 0.2666
+2025-03-17 01:09:11,401 RDE.train INFO: Batch 22: lossB - min: 0.2613, max: 0.2993, mean: 0.2820
+2025-03-17 01:09:17,809 RDE.train INFO: Batch 23: lossA - min: 0.2095, max: 0.3003, mean: 0.2665
+2025-03-17 01:09:17,815 RDE.train INFO: Batch 23: lossB - min: 0.2657, max: 0.2985, mean: 0.2847
+2025-03-17 01:09:21,173 RDE.train INFO: Batch 24: lossA - min: 0.1611, max: 0.3210, mean: 0.2618
+2025-03-17 01:09:21,177 RDE.train INFO: Batch 24: lossB - min: 0.2548, max: 0.2999, mean: 0.2852
+2025-03-17 01:09:30,569 RDE.train INFO: Batch 25: lossA - min: 0.2237, max: 0.3512, mean: 0.2782
+2025-03-17 01:09:30,573 RDE.train INFO: Batch 25: lossB - min: 0.2641, max: 0.2950, mean: 0.2830
+2025-03-17 01:09:37,645 RDE.train INFO: Batch 26: lossA - min: 0.1447, max: 0.3205, mean: 0.2663
+2025-03-17 01:09:37,646 RDE.train INFO: Batch 26: lossB - min: 0.2665, max: 0.2921, mean: 0.2828
+2025-03-17 01:09:41,585 RDE.train INFO: Batch 27: lossA - min: 0.1615, max: 0.3370, mean: 0.2663
+2025-03-17 01:09:41,586 RDE.train INFO: Batch 27: lossB - min: 0.2641, max: 0.3021, mean: 0.2825
+2025-03-17 01:09:47,649 RDE.train INFO: Batch 28: lossA - min: 0.1872, max: 0.3146, mean: 0.2617
+2025-03-17 01:09:47,650 RDE.train INFO: Batch 28: lossB - min: 0.2665, max: 0.3025, mean: 0.2866
+2025-03-17 01:09:49,167 RDE.train INFO: Batch 29: lossA - min: 0.1479, max: 0.3287, mean: 0.2380
+2025-03-17 01:09:49,169 RDE.train INFO: Batch 29: lossB - min: 0.2623, max: 0.3097, mean: 0.2849
+2025-03-17 01:09:54,671 RDE.train INFO: Batch 30: lossA - min: 0.1608, max: 0.3206, mean: 0.2471
+2025-03-17 01:09:54,672 RDE.train INFO: Batch 30: lossB - min: 0.2527, max: 0.3143, mean: 0.2845
+2025-03-17 01:09:59,048 RDE.train INFO: Batch 31: lossA - min: 0.1804, max: 0.3138, mean: 0.2552
+2025-03-17 01:09:59,049 RDE.train INFO: Batch 31: lossB - min: 0.2535, max: 0.3111, mean: 0.2895
+2025-03-17 01:10:16,370 RDE.train INFO: Batch 32: lossA - min: 0.1916, max: 0.3311, mean: 0.2690
+2025-03-17 01:10:16,372 RDE.train INFO: Batch 32: lossB - min: 0.2495, max: 0.2988, mean: 0.2829
+2025-03-17 01:10:24,523 RDE.train INFO: Batch 33: lossA - min: 0.2216, max: 0.3349, mean: 0.2778
+2025-03-17 01:10:24,597 RDE.train INFO: Batch 33: lossB - min: 0.2591, max: 0.3035, mean: 0.2827
+2025-03-17 01:10:26,690 RDE.train INFO: Batch 34: lossA - min: 0.0282, max: 0.3524, mean: 0.2427
+2025-03-17 01:10:26,692 RDE.train INFO: Batch 34: lossB - min: 0.2611, max: 0.3057, mean: 0.2875
+2025-03-17 01:10:30,916 RDE.train INFO: Batch 35: lossA - min: 0.1120, max: 0.3122, mean: 0.2555
+2025-03-17 01:10:30,930 RDE.train INFO: Batch 35: lossB - min: 0.2705, max: 0.3010, mean: 0.2842
+2025-03-17 01:10:34,175 RDE.train INFO: Batch 36: lossA - min: 0.1867, max: 0.3182, mean: 0.2608
+2025-03-17 01:10:34,177 RDE.train INFO: Batch 36: lossB - min: 0.2523, max: 0.3076, mean: 0.2872
+2025-03-17 01:10:36,955 RDE.train INFO: Batch 37: lossA - min: 0.1572, max: 0.3668, mean: 0.2620
+2025-03-17 01:10:36,956 RDE.train INFO: Batch 37: lossB - min: 0.2632, max: 0.3077, mean: 0.2872
+2025-03-17 01:10:39,677 RDE.train INFO: Batch 38: lossA - min: 0.1744, max: 0.3415, mean: 0.2626
+2025-03-17 01:10:39,679 RDE.train INFO: Batch 38: lossB - min: 0.2556, max: 0.3061, mean: 0.2846
+2025-03-17 01:10:44,700 RDE.train INFO: Batch 39: lossA - min: 0.1666, max: 0.3489, mean: 0.2594
+2025-03-17 01:10:44,701 RDE.train INFO: Batch 39: lossB - min: 0.2655, max: 0.3122, mean: 0.2836
+2025-03-17 01:10:46,795 RDE.train INFO: Batch 40: lossA - min: 0.2096, max: 0.3416, mean: 0.2699
+2025-03-17 01:10:46,799 RDE.train INFO: Batch 40: lossB - min: 0.2707, max: 0.3086, mean: 0.2882
+2025-03-17 01:10:51,722 RDE.train INFO: Batch 41: lossA - min: 0.1143, max: 0.3163, mean: 0.2500
+2025-03-17 01:10:51,724 RDE.train INFO: Batch 41: lossB - min: 0.2599, max: 0.3037, mean: 0.2834
+2025-03-17 01:10:54,843 RDE.train INFO: Batch 42: lossA - min: 0.1925, max: 0.3220, mean: 0.2599
+2025-03-17 01:10:54,849 RDE.train INFO: Batch 42: lossB - min: 0.2623, max: 0.3119, mean: 0.2891
+2025-03-17 01:11:00,130 RDE.train INFO: Batch 43: lossA - min: 0.1539, max: 0.3244, mean: 0.2604
+2025-03-17 01:11:00,139 RDE.train INFO: Batch 43: lossB - min: 0.2574, max: 0.3072, mean: 0.2877
+2025-03-17 01:11:06,066 RDE.train INFO: Batch 44: lossA - min: 0.1171, max: 0.2995, mean: 0.2422
+2025-03-17 01:11:06,067 RDE.train INFO: Batch 44: lossB - min: 0.2630, max: 0.3102, mean: 0.2882
+2025-03-17 01:11:13,246 RDE.train INFO: Batch 45: lossA - min: 0.2131, max: 0.3236, mean: 0.2634
+2025-03-17 01:11:13,251 RDE.train INFO: Batch 45: lossB - min: 0.2518, max: 0.3054, mean: 0.2867
+2025-03-17 01:11:15,716 RDE.train INFO: Batch 46: lossA - min: 0.1724, max: 0.3280, mean: 0.2674
+2025-03-17 01:11:15,717 RDE.train INFO: Batch 46: lossB - min: 0.2607, max: 0.2972, mean: 0.2824
+2025-03-17 01:11:19,628 RDE.train INFO: Batch 47: lossA - min: 0.0859, max: 0.2911, mean: 0.2501
+2025-03-17 01:11:19,648 RDE.train INFO: Batch 47: lossB - min: 0.2485, max: 0.3069, mean: 0.2866
+2025-03-17 01:11:22,741 RDE.train INFO: Batch 48: lossA - min: 0.1685, max: 0.3415, mean: 0.2548
+2025-03-17 01:11:22,742 RDE.train INFO: Batch 48: lossB - min: 0.2714, max: 0.2927, mean: 0.2838
+2025-03-17 01:11:26,833 RDE.train INFO: Batch 49: lossA - min: 0.2070, max: 0.3145, mean: 0.2687
+2025-03-17 01:11:26,834 RDE.train INFO: Batch 49: lossB - min: 0.2441, max: 0.3158, mean: 0.2872
+2025-03-17 01:11:33,064 RDE.train INFO: Batch 50: lossA - min: 0.1528, max: 0.3932, mean: 0.2687
+2025-03-17 01:11:33,105 RDE.train INFO: Batch 50: lossB - min: 0.2688, max: 0.3244, mean: 0.2880

@@ -1,0 +1,124 @@
+2025-03-16 02:11:47,993 RDE INFO: Using 1 GPUs
+2025-03-16 02:11:47,994 RDE INFO: Namespace(alpha=0.9
+ batch_size=16
+ beta=0.999
+ bias_lr_factor=2.0
+ cmt_depth=4
+ dataset_name='MSVD'
+ distributed=False
+ eval_period=1
+ gamma=0.1
+ img_aug=True
+ img_size=(384
+ 128)
+ local_rank=0
+ log_period=100
+ loss_names='TAL+sr0.3_tau0.015_margin0.1_n0.2'
+ lr=1e-05
+ lr_factor=5.0
+ lrscheduler='cosine'
+ margin=0.1
+ masked_token_rate=0.8
+ masked_token_unchanged_rate=0.1
+ milestones=(20
+ 50)
+ momentum=0.9
+ name='RDE'
+ noisy_file='./noiseindex/MSVD_0.2.npy'
+ noisy_rate=0.2
+ num_epoch=60
+ num_instance=4
+ num_workers=1
+ optimizer='Adam'
+ output_dir='run_logs/MSVD/20250316_021147_RDE_TAL+sr0.3_tau0.015_margin0.1_n0.2'
+ power=0.9
+ pretrain_choice='ViT-B/16'
+ resume=False
+ resume_ckpt_file=''
+ root_dir='./datas'
+ sampler='random'
+ select_ratio=0.3
+ stride_size=16
+ target_lr=0
+ tau=0.015
+ temperature=0.02
+ test_batch_size=512
+ text_length=77
+ training=True
+ txt_aug=True
+ val_dataset='test'
+ video_frame_rate=1
+ vocab_size=49408
+ warmup_epochs=5
+ warmup_factor=0.1
+ warmup_method='linear'
+ weight_decay=4e-05
+ weight_decay_bias=0.0)
+2025-03-16 02:11:48,082 RDE.dataset INFO: => MSVD Videos and Captions are loaded
+2025-03-16 02:11:48,083 RDE.dataset INFO: MSVD Dataset statistics:
+2025-03-16 02:11:48,084 RDE.dataset INFO: 
++--------+------+--------+----------+
+| subset | ids  | images | captions |
++--------+------+--------+----------+
+| train  | 1970 |  1970  |  80827   |
+|  test  |  0   |   0    |    0     |
+|  val   |  0   |   0    |    0     |
++--------+------+--------+----------+
+2025-03-16 02:11:48,094 RDE.dataset INFO: => Load noisy index from ./noiseindex/MSVD_0.2.npy
+2025-03-16 02:11:48,131 RDE.dataset INFO: [1, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+2025-03-16 02:11:48,135 RDE.dataset INFO: =>Noisy rate: 0.2,  clean pairs: 64663, noisy pairs: 16164, total pairs: 80827
+2025-03-16 02:11:51,109 RDE INFO: Total params: 153M
+2025-03-16 02:11:54,501 RDE.train INFO: start training
+2025-03-16 02:11:57,875 RDE.train INFO: compute loss batch 0
+2025-03-16 02:15:54,761 RDE.train INFO: compute loss batch 100
+2025-03-16 02:20:41,602 RDE.train INFO: compute loss batch 200
+2025-03-16 02:28:48,405 RDE.train INFO: compute loss batch 300
+2025-03-16 02:40:55,120 RDE.train INFO: compute loss batch 400
+2025-03-16 02:51:46,091 RDE.train INFO: compute loss batch 500
+2025-03-16 03:03:40,095 RDE.train INFO: compute loss batch 600
+2025-03-16 03:09:03,957 RDE.train INFO: compute loss batch 700
+2025-03-16 03:13:28,668 RDE.train INFO: compute loss batch 800
+2025-03-16 03:17:33,063 RDE.train INFO: compute loss batch 900
+2025-03-16 03:22:16,424 RDE.train INFO: compute loss batch 1000
+2025-03-16 03:26:19,757 RDE.train INFO: compute loss batch 1100
+2025-03-16 03:31:06,825 RDE.train INFO: compute loss batch 1200
+2025-03-16 03:36:09,331 RDE.train INFO: compute loss batch 1300
+2025-03-16 03:40:45,461 RDE.train INFO: compute loss batch 1400
+2025-03-16 03:45:20,713 RDE.train INFO: compute loss batch 1500
+2025-03-16 03:49:46,442 RDE.train INFO: compute loss batch 1600
+2025-03-16 03:54:30,070 RDE.train INFO: compute loss batch 1700
+2025-03-16 03:58:54,309 RDE.train INFO: compute loss batch 1800
+2025-03-16 04:03:08,411 RDE.train INFO: compute loss batch 1900
+2025-03-16 04:07:37,250 RDE.train INFO: compute loss batch 2000
+2025-03-16 04:12:21,846 RDE.train INFO: compute loss batch 2100
+2025-03-16 04:16:29,355 RDE.train INFO: compute loss batch 2200
+2025-03-16 04:20:51,203 RDE.train INFO: compute loss batch 2300
+2025-03-16 04:25:14,862 RDE.train INFO: compute loss batch 2400
+2025-03-16 04:29:35,830 RDE.train INFO: compute loss batch 2500
+2025-03-16 04:34:01,494 RDE.train INFO: compute loss batch 2600
+2025-03-16 04:38:34,309 RDE.train INFO: compute loss batch 2700
+2025-03-16 04:42:57,804 RDE.train INFO: compute loss batch 2800
+2025-03-16 04:47:16,875 RDE.train INFO: compute loss batch 2900
+2025-03-16 04:51:37,019 RDE.train INFO: compute loss batch 3000
+2025-03-16 04:56:22,067 RDE.train INFO: compute loss batch 3100
+2025-03-16 05:00:55,170 RDE.train INFO: compute loss batch 3200
+2025-03-16 05:05:10,077 RDE.train INFO: compute loss batch 3300
+2025-03-16 05:09:35,839 RDE.train INFO: compute loss batch 3400
+2025-03-16 05:13:53,342 RDE.train INFO: compute loss batch 3500
+2025-03-16 05:18:14,817 RDE.train INFO: compute loss batch 3600
+2025-03-16 05:22:32,427 RDE.train INFO: compute loss batch 3700
+2025-03-16 05:26:40,933 RDE.train INFO: compute loss batch 3800
+2025-03-16 05:31:04,688 RDE.train INFO: compute loss batch 3900
+2025-03-16 05:35:14,854 RDE.train INFO: compute loss batch 4000
+2025-03-16 05:39:21,535 RDE.train INFO: compute loss batch 4100
+2025-03-16 05:43:34,185 RDE.train INFO: compute loss batch 4200
+2025-03-16 05:47:52,920 RDE.train INFO: compute loss batch 4300
+2025-03-16 05:54:43,233 RDE.train INFO: compute loss batch 4400
+2025-03-16 05:59:07,289 RDE.train INFO: compute loss batch 4500
+2025-03-16 06:04:49,095 RDE.train INFO: compute loss batch 4600
+2025-03-16 06:25:31,122 RDE.train INFO: compute loss batch 4700
+2025-03-16 06:47:29,985 RDE.train INFO: compute loss batch 4800
+2025-03-16 07:08:26,912 RDE.train INFO: compute loss batch 4900
+2025-03-16 07:30:42,449 RDE.train INFO: compute loss batch 5000
+2025-03-16 07:40:55,227 RDE.train INFO: 
+Fitting GMM ...
