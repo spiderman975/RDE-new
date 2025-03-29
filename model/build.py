@@ -105,13 +105,17 @@ class RDE(nn.Module):
                                                     margin=self.args.margin, \
                                                     loss_type=self.loss_type, \
                                                     logit_scale=self.logit_scale)
+
+        '''
         lossB, simsB = objectives.compute_per_loss(i_tse_f, t_tse_f, batch['pids'],\
                                                     tau=self.args.tau, \
                                                     margin=self.args.margin, \
                                                     loss_type=self.loss_type, \
                                                     logit_scale=self.logit_scale)
-        
-        return lossA.detach().cpu(), lossB.detach().cpu(), simsA, simsB
+        '''
+
+        #return lossA.detach().cpu(), lossB.detach().cpu(), simsA, simsB
+        return lossA.detach().cpu(), simsA
 
     def forward(self, batch):
         ret = dict()
