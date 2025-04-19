@@ -181,72 +181,79 @@ def get_loss(model, data_loader):
     model.eval()
     device = "cuda"
     data_size = data_loader.dataset.__len__()
-    # ↓↓↓【删除 lossB 和 simsB 的初始化】↓↓↓
-    # lossA, lossB, simsA, simsB = torch.zeros(data_size), torch.zeros(data_size), torch.zeros(data_size), torch.zeros(data_size)
-    lossA, simsA = torch.zeros(data_size), torch.zeros(data_size)
-    # ↑↑↑ 删除结束 ↑↑↑
+
+    lossA, lossB, simsA, simsB = torch.zeros(data_size), torch.zeros(data_size), torch.zeros(data_size), torch.zeros(data_size)
+
 
     for i, batch in enumerate(data_loader):
         batch = {k: v.to(device) for k, v in batch.items()}
         index = batch['index']
         with torch.no_grad():
-            # ↓↓↓【修改：只接收 lossA 和 simsA，去除 lb, sb】↓↓↓
-            # la, lb, sa, sb = model.compute_per_loss(batch)
-            la, sa = model.compute_per_loss(batch)
-            # ↑↑↑ 删除 lossB 相关部分 ↑↑↑
+
+            la, lb, sa, sb = model.compute_per_loss(batch)
+
+
             for b in range(la.size(0)):
                 lossA[index[b]] = la[b]
-                # ↓↓↓【删除 lossB 赋值】↓↓↓
-                # lossB[index[b]] = lb[b]
-                # ↑↑↑ 删除结束 ↑↑↑
+
+                lossB[index[b]] = lb[b]
+
                 simsA[index[b]] = sa[b]
-                # ↓↓↓【删除 simsB 赋值】↓↓↓
-                # simsB[index[b]] = sb[b]
-                # ↑↑↑ 删除结束 ↑↑↑
+
+                simsB[index[b]] = sb[b]
+
             if i % 100 == 0:
                 logger.info(f'compute loss batch {i}')
 
     logger.info(
         f"Global lossA - min: {lossA.min().item():.4f}, max: {lossA.max().item():.4f}, mean: {lossA.mean().item():.4f}")
-    # ↓↓↓【删除全局 lossB 的日志打印】↓↓↓
-    # logger.info(
-    #     f"Global lossB - min: {lossB.min().item():.4f}, max: {lossB.max().item():.4f}, mean: {lossB.mean().item():.4f}")
-    # ↑↑↑ 删除结束 ↑↑↑
+
+    logger.info(
+        f"Global lossB - min: {lossB.min().item():.4f}, max: {lossB.max().item():.4f}, mean: {lossB.mean().item():.4f}")
+
 
     eps = 1e-8
     losses_A = (lossA - lossA.min()) / (lossA.max() - lossA.min() + eps)
-    # ↓↓↓【删除 losses_B 和 input_loss_B 的计算】↓↓↓
-    # losses_B = (lossB - lossB.min()) / (lossB.max() - lossB.min() + eps)
-    # input_loss_B = losses_B.reshape(-1, 1)
-    # ↑↑↑ 删除结束 ↑↑↑
+
+    losses_B = (lossB - lossB.min()) / (lossB.max() - lossB.min() + eps)
+    input_loss_B = losses_B.reshape(-1, 1)
+
     input_loss_A = losses_A.reshape(-1, 1)
 
     logger.info('\nFitting GMM ...')
 
     if model.args.noisy_rate > 0.4 or model.args.dataset_name == 'RSTPReid':
-        # ↓↓↓【只保留 gmm_A】↓↓↓
-        gmm_A = GaussianMixture(n_components=2, max_iter=100, tol=1e-4, reg_covar=1e-6)
-        # gmm_B = GaussianMixture(n_components=2, max_iter=100, tol=1e-4, reg_covar=1e-6)
+
+        gmm_A = GaussianMixture(n_components=1, max_iter=100, tol=1e-4, reg_covar=1e-6)
+        gmm_B = GaussianMixture(n_components=1, max_iter=100, tol=1e-4, reg_covar=1e-6)
     else:
-        gmm_A = GaussianMixture(n_components=2, max_iter=10, tol=1e-2, reg_covar=5e-4)
-        # gmm_B = GaussianMixture(n_components=2, max_iter=10, tol=1e-2, reg_covar=5e-4)
-    # ↑↑↑ 删除结束 ↑↑↑
+        gmm_A = GaussianMixture(n_components=1, max_iter=10, tol=1e-2, reg_covar=5e-4)
+        gmm_B = GaussianMixture(n_components=1, max_iter=10, tol=1e-2, reg_covar=5e-4)
+
 
     gmm_A.fit(input_loss_A.cpu().numpy())
-    prob_A = gmm_A.predict_proba(input_loss_A.cpu().numpy())
-    prob_A = prob_A[:, gmm_A.means_.argmin()]
+    #prob_A = gmm_A.predict_proba(input_loss_A.cpu().numpy())
+    #prob_A = prob_A[:, gmm_A.means_.argmin()]
+    logp_A = gmm_A.score_samples(input_loss_A.cpu().numpy())  # 每个样本的 log 概率密度
+    # 把 logp 映射到 [0,1] 当作“clean”概率
+    pmin, pmax = logp_A.min(), logp_A.max()
+    prob_A = (logp_A - pmin) / (pmax - pmin + 1e-8)
 
-    # ↓↓↓【删除 gmm_B 拟合和 prob_B 的计算】↓↓↓
-    # gmm_B.fit(input_loss_B.cpu().numpy())
-    # prob_B = gmm_B.predict_proba(input_loss_B.cpu().numpy())
-    # prob_B = prob_B[:, gmm_B.means_.argmin()]
-    # ↑↑↑ 删除结束 ↑↑↑
+
+    gmm_B.fit(input_loss_B.cpu().numpy())
+    #prob_B = gmm_B.predict_proba(input_loss_B.cpu().numpy())
+    #prob_B = prob_B[:, gmm_B.means_.argmin()]
+    logp_B = gmm_B.score_samples(input_loss_B.cpu().numpy())
+    pmin, pmax = logp_B.min(), logp_B.max()
+    prob_B = (logp_B - pmin) / (pmax - pmin + 1e-8)
+
+
 
     pred_A = split_prob(prob_A, 0.5)
-    # ↓↓↓【删除 pred_B 的计算和返回】↓↓↓
-    # pred_B = split_prob(prob_B, 0.5)
-    # return torch.Tensor(pred_A), torch.Tensor(pred_B)
-    return torch.Tensor(pred_A)
+    pred_B = split_prob(prob_B, 0.5)
+
+    return torch.Tensor(pred_A), torch.Tensor(pred_B)
+
 
 
 
@@ -289,16 +296,15 @@ def do_train(start_epoch, args, model, train_loader, evaluator, optimizer,
         # data_size = train_loader.dataset.__len__()
         # pred_A, pred_B  =  torch.ones(data_size), torch.ones(data_size)
     
-        #pred_A, pred_B = get_loss(model, train_loader)
+        pred_A, pred_B = get_loss(model, train_loader)
     
-        #consensus_division = pred_A + pred_B # 0,1,2
-        #consensus_division[consensus_division==1] += torch.randint(0, 2, size=(((consensus_division==1)+0).sum(),))
-        #label_hat = consensus_division.clone()
-        #label_hat[consensus_division>1] = 1
-        #label_hat[consensus_division<=1] = 0
+        consensus_division = pred_A + pred_B # 0,1,2
+        consensus_division[consensus_division==1] += torch.randint(0, 2, size=(((consensus_division==1)+0).sum(),))
+        label_hat = consensus_division.clone()
+        label_hat[consensus_division>1] = 1
+        label_hat[consensus_division<=1] = 0
 
-        pred_A = get_loss(model, train_loader)
-        label_hat = pred_A.clone()  # 使用 pred_A 作为最终标签
+
         
         model.train() 
         for n_iter, batch in enumerate(train_loader):

@@ -1,6 +1,6 @@
 from . import objectives
 
-#from .CrossEmbeddingLayer_tse import TexualEmbeddingLayer, VisualEmbeddingLayer
+from .CrossEmbeddingLayer_tse import TexualEmbeddingLayer, VisualEmbeddingLayer
 from .clip_model import build_CLIP_from_openai_pretrained, convert_weights
 import torch
 import torch.nn as nn 
@@ -25,8 +25,8 @@ class RDE(nn.Module):
 
         self.logit_scale = torch.ones([]) * (1 / args.temperature) 
  
-        #self.visul_emb_layer = VisualEmbeddingLayer(ratio=args.select_ratio)
-        #self.texual_emb_layer = TexualEmbeddingLayer(ratio=args.select_ratio)
+        self.visul_emb_layer = VisualEmbeddingLayer(ratio=args.select_ratio)
+        self.texual_emb_layer = TexualEmbeddingLayer(ratio=args.select_ratio)
  
         if 'TAL' in self.current_task:
             loss_type = 'TAL'
@@ -65,24 +65,24 @@ class RDE(nn.Module):
             # 假设图像模型返回序列，取第一个 token 作为全局表示
             return x[:, 0, :].float(), atten
 
-    '''
+
     def encode_video_tse(self, video):
         x, atten = self.base_model.encode_video(video)
         v_tse_f = self.visul_emb_layer(x, atten)
         return v_tse_f.float()
-    '''
+
 
     def encode_text(self, text):
         x, _ = self.base_model.encode_text(text.long())
         return x[torch.arange(x.shape[0]), text.argmax(dim=-1)].float()
 
 
-    '''
+
     def encode_text_tse(self, text):
         x,atten_t = self.base_model.encode_text(text.long())
         t_tse_f = self.texual_emb_layer(x, text, atten_t)
         return t_tse_f.float()
-    '''
+
 
     def compute_per_loss(self, batch):
         videos = batch['videos']
@@ -100,8 +100,8 @@ class RDE(nn.Module):
         # i_feats = image_feats.float() # for CLIP ResNet visual model
         t_feats = text_feats[torch.arange(text_feats.shape[0]), caption_ids.argmax(dim=-1)].float()
 
-        #i_tse_f = self.visul_emb_layer(video_feats, atten_v)
-        #t_tse_f = self.texual_emb_layer(text_feats, caption_ids, atten_t)
+        i_tse_f = self.visul_emb_layer(video_feats, atten_v)
+        t_tse_f = self.texual_emb_layer(text_feats, caption_ids, atten_t)
 
         lossA, simsA = objectives.compute_per_loss(i_feats, t_feats, batch['pids'], \
                                                     tau=self.args.tau, \
@@ -109,16 +109,16 @@ class RDE(nn.Module):
                                                     loss_type=self.loss_type, \
                                                     logit_scale=self.logit_scale)
 
-        '''
+
         lossB, simsB = objectives.compute_per_loss(i_tse_f, t_tse_f, batch['pids'],\
                                                     tau=self.args.tau, \
                                                     margin=self.args.margin, \
                                                     loss_type=self.loss_type, \
                                                     logit_scale=self.logit_scale)
-        '''
 
-        #return lossA.detach().cpu(), lossB.detach().cpu(), simsA, simsB
-        return lossA.detach().cpu(), simsA
+
+        return lossA.detach().cpu(), lossB.detach().cpu(), simsA, simsB
+
 
     def forward(self, batch):
         ret = dict()
@@ -133,16 +133,16 @@ class RDE(nn.Module):
         # i_feats = image_feats.float() # for CLIP ResNet visual model
         t_feats = text_feats[torch.arange(text_feats.shape[0]), caption_ids.argmax(dim=-1)].float()
 
-        #i_tse_f = self.visul_emb_layer(video_feats, atten_v)
-        #t_tse_f = self.texual_emb_layer(text_feats, caption_ids, atten_t)
+        i_tse_f = self.visul_emb_layer(video_feats, atten_v)
+        t_tse_f = self.texual_emb_layer(text_feats, caption_ids, atten_t)
             
         label_hat = batch['label_hat'].to(i_feats.device) 
      
-        loss1 = objectives.compute_rbs(i_feats, t_feats, batch['pids'], \
+        loss1, loss2 = objectives.compute_rbs(i_feats, t_feats, i_tse_f, t_tse_f, batch['pids'], \
                                               label_hat=label_hat, margin=self.args.margin,tau=self.args.tau,\
                                                 loss_type=self.loss_type,logit_scale=self.logit_scale)
         ret.update({'bge_loss':loss1})
-        #ret.update({'tse_loss':loss2})
+        ret.update({'tse_loss':loss2})
   
         return ret
 
