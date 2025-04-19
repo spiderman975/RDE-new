@@ -77,21 +77,22 @@ def compute_TAL_per(scores, pid, tau, margin):
     loss = (-  (alpha_i2t*scores).sum(1) + tau * ((scores / tau).exp() * mask).sum(1).clamp(max=10e35).log() + margin).clamp(min=0)  \
         +  (-  (alpha_t2i*scores.t()).sum(1) + tau * ((scores.t() / tau).exp() * mask).sum(1).clamp(max=10e35).log() + margin).clamp(min=0)
     
-    return loss 
+    return loss
 
-def compute_rbs(i_feats, t_feats, pid, label_hat=None, tau=0.02, margin=0.1, loss_type='TAL', logit_scale=50):
 
+def compute_rbs(i_feats, t_feats, i_tse_f, t_tse_f, pid, label_hat=None, tau=0.02, margin=0.1, loss_type='TAL',
+                logit_scale=50):
     loss_bgm, _ = compute_per_loss(i_feats, t_feats, pid, tau, margin, loss_type, logit_scale)
-    #loss_tse, _ = compute_per_loss(i_tse_f, t_tse_f, pid, tau, margin, loss_type, logit_scale)
+    loss_tse, _ = compute_per_loss(i_tse_f, t_tse_f, pid, tau, margin, loss_type, logit_scale)
 
-    loss_bgm = (label_hat*loss_bgm).sum()
-    #loss_tse = (label_hat*loss_tse).sum()
-    
-    if loss_type in ['TAL','TRL']:
-        return loss_bgm
+    loss_bgm = (label_hat * loss_bgm).sum()
+    loss_tse = (label_hat * loss_tse).sum()
+
+    if loss_type in ['TAL', 'TRL']:
+        return loss_bgm, loss_tse
     else:
-        return loss_bgm/label_hat.sum() # mean
-
+        return loss_bgm / label_hat.sum(), loss_tse / label_hat.sum()  # mean
+    
 def compute_per_loss(image_features, text_features, pid, tau=0.02, margin=0.2, loss_type='TAL', logit_scale=50):
     
     # # normalized features
