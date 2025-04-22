@@ -54,8 +54,7 @@ class MLP(nn.Module):
  
 class TexualEmbeddingLayer(nn.Module):
     def __init__(self, input_dim=512, embed_dim=1024, ratio=0.3):
-        super(TexualEmbeddingLayer, self).__init__()
-        self.embed_dim = embed_dim
+        super().__init__()
         self.linear = nn.Linear(input_dim, embed_dim)
         self.mlp = MLP(input_dim, embed_dim // 2, embed_dim, 2)
         self.ratio = ratio
@@ -69,55 +68,51 @@ class TexualEmbeddingLayer(nn.Module):
         device = features.device
         bs, seq_len, _ = atten.size()
 
-        # 1) 构造非 padding mask，并计算 token 总长度（含 SOS/EOS）
-        mask = (text != 0).float()           # (bs, seq_len)
-        token_lens = mask.sum(dim=1)         # (bs,)
+        # ——— 1) 清理 NaN/Inf ———
+        atten = torch.nan_to_num(atten, nan=0.0, posinf=0.0, neginf=0.0)
 
-        # 2) 计算 top-K 参数，至少为 1
-        k = max(1, int((seq_len - 2) * self.ratio))
+        # ——— 2) 强制转为 float32，避免后续 mask 大值 overflow half ———
+        if atten.dtype == torch.float16:
+            atten = atten.float()  # ← 修改处
 
-        # 3) 定位 EOS token
-        eos_pos = (token_lens - 1).long().clamp(min=0, max=seq_len - 1)  # (bs,)
+        # ——— 3) 构造 PAD 掩码并计算 token 长度 ———
+        pad_id = 0
+        mask = (text != pad_id).float()
+        token_lens = mask.sum(dim=1).long().clamp(min=1)
 
-        # 4) 替换 attention 中的 NaN
-        if torch.isnan(atten).any():
-            print("Warning: NaN detected in atten; replacing with -1")
-            atten = torch.nan_to_num(atten, nan=-1.0)
+        # ——— 4) 定位 EOS ———
+        eos_pos = (token_lens - 1).clamp(min=0, max=seq_len - 1)
 
         batch_idx = torch.arange(bs, device=device)
 
-        # 5) 屏蔽 SOS（pos=0）和 EOS 位置
-        atten[batch_idx, :, 0] = -1.0
-        atten[batch_idx, :, eos_pos] = -1.0
-        atten[batch_idx, eos_pos, :] = -1.0
+        # ——— 5) 屏蔽 SOS/EOS/PAD，使用一个合理范围内的极小值 ———
+        mask_value = -1e4  # half 转 float 后也安全；若仍需 half，可用 torch.finfo(dtype).min
+        atten[batch_idx, :, 0] = mask_value
+        atten[batch_idx, :, eos_pos] = mask_value
+        atten = atten.masked_fill(mask.unsqueeze(1) == 0, mask_value)
 
-        # 6) 取出每条样本 EOS 行，并打 mask
-        atten_sel = atten[batch_idx, eos_pos, :]  # (bs, seq_len)
-        atten_sel = atten_sel * mask
+        # ——— 6) 重新做 softmax 归一化 ———
+        atten = torch.softmax(atten, dim=1)
 
-        # 7) Top-K 选择
-        topk_vals, topk_idx = atten_sel.topk(k, dim=-1)  # (bs, k)
+        # ——— 7) Top‑K 聚集逻辑 ———
+        k = max(1, int((seq_len - 2) * self.ratio))
+        atten_sel = atten[batch_idx, eos_pos, :] * mask      # (bs, seq_len)
+        topk_vals, topk_idx = atten_sel.topk(k, dim=-1)
+        idx_exp = topk_idx.unsqueeze(-1).expand(-1, -1, features.size(2))
+        feats_k = features.gather(1, idx_exp)             # (bs, k, input_dim)
 
-        # 8) 聚集对应的特征
-        idx_exp = topk_idx.unsqueeze(-1).expand(-1, -1, features.size(2))  # (bs, k, input_dim)
-        feats_k = features.gather(1, idx_exp)                              # (bs, k, input_dim)
+        # ——— 8) L2 归一化 & 融合 ———
+        norm = feats_k.norm(p=2, dim=-1, keepdim=True).clamp_min(1e-6)
+        feats_k = feats_k / norm
+        cap_emb = self.linear(feats_k)
+        feats_mlp = self.mlp(feats_k)
+        fused = cap_emb + feats_mlp
 
-        # 9) L2 归一化，添加 ε 避免除零
-        norm = feats_k.norm(p=2, dim=-1, keepdim=True).clamp_min(1e-6)     # (bs, k, 1)
-        feats_k = feats_k / norm                                           # (bs, k, input_dim)
+        # ——— 9) 可变长度 max‑pooling ———
+        pool_lens = (token_lens - 2).clamp(min=1, max=k).long()
+        out = maxk_pool1d_var(fused, 1, 1, pool_lens.to(device))
 
-        # 10) 计算池化长度，至少为 1 且不超过 k
-        pool_lens = (token_lens - 2).clamp(min=1, max=k).long()            # (bs,)
-
-        # 11) 线性映射与 MLP 融合
-        cap_emb = self.linear(feats_k)       # (bs, k, embed_dim)
-        feats_mlp = self.mlp(feats_k)        # (bs, k, embed_dim)
-        fused = feats_mlp + cap_emb          # (bs, k, embed_dim)
-
-        # 12) 可变长度 max-pooling
-        out = maxk_pool1d_var(fused, 1, 1, pool_lens.to(device))  # (bs, embed_dim)
-
-        # 13) 最终 NaN 检查
+        # ——— 10) 最终 NaN 检查 ———
         if torch.isnan(out).any():
             print("Warning: NaN detected in TexualEmbeddingLayer output!")
 
