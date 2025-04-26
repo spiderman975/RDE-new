@@ -68,6 +68,12 @@ class TexualEmbeddingLayer(nn.Module):
         device = features.device
         bs, seq_len, _ = atten.size()
 
+        # —— 0) 检查上游是否已有 NaN/Inf ——
+        if torch.isnan(atten).any():
+            print("Warning: NaN found in atten BEFORE cleaning!")
+        if torch.isinf(atten).any():
+            print("Warning: Inf found in atten BEFORE cleaning!")
+
         # ——— 1) 清理 NaN/Inf ———
         atten = torch.nan_to_num(atten, nan=0.0, posinf=0.0, neginf=0.0)
 
@@ -92,14 +98,18 @@ class TexualEmbeddingLayer(nn.Module):
         atten = atten.masked_fill(mask.unsqueeze(1) == 0, mask_value)
 
         # ——— 6) 重新做 softmax 归一化 ———
-        atten = torch.softmax(atten, dim=1)
+        atten = torch.softmax(atten, dim=-1)
+        if torch.isnan(atten).any():
+            print("Warning: NaN found in atten AFTER softmax!")  # ← 新增检查
 
-        # ——— 7) Top‑K 聚集逻辑 ———
+        # ——— 7) Top‑K 聚集逻辑 （与原版一致） ———
         k = max(1, int((seq_len - 2) * self.ratio))
         atten_sel = atten[batch_idx, eos_pos, :] * mask      # (bs, seq_len)
         topk_vals, topk_idx = atten_sel.topk(k, dim=-1)
         idx_exp = topk_idx.unsqueeze(-1).expand(-1, -1, features.size(2))
         feats_k = features.gather(1, idx_exp)             # (bs, k, input_dim)
+        if torch.isnan(feats_k).any():
+            print("Warning: NaN found in feats_k AFTER gather!")  # ← 新增检查
 
         # ——— 8) L2 归一化 & 融合 ———
         norm = feats_k.norm(p=2, dim=-1, keepdim=True).clamp_min(1e-6)
@@ -107,6 +117,8 @@ class TexualEmbeddingLayer(nn.Module):
         cap_emb = self.linear(feats_k)
         feats_mlp = self.mlp(feats_k)
         fused = cap_emb + feats_mlp
+        if torch.isnan(fused).any():
+            print("Warning: NaN found in fused features!")  # ← 新增检查
 
         # ——— 9) 可变长度 max‑pooling ———
         pool_lens = (token_lens - 2).clamp(min=1, max=k).long()

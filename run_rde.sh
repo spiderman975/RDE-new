@@ -16,7 +16,7 @@ CUDA_VISIBLE_DEVICES=0 \
     --name RDE \
     --img_aug \
     --txt_aug \
-    --batch_size 4 \
+    --batch_size 2 \
     --select_ratio $select_ratio \
     --tau $tau \
     --root_dir $root_dir \
