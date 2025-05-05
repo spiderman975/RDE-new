@@ -1,6 +1,6 @@
 #!/bin/bash
 root_dir=./datas
-tau=0.015 
+tau=0.015
 margin=0.1
 noisy_rate=0.2  #0.0 0.2 0.5 0.8
 select_ratio=0.3
@@ -16,14 +16,15 @@ CUDA_VISIBLE_DEVICES=0 \
     --name RDE \
     --img_aug \
     --txt_aug \
-    --batch_size 2 \
+    --batch_size 4 \
     --select_ratio $select_ratio \
     --tau $tau \
     --root_dir $root_dir \
     --output_dir run_logs \
     --margin $margin \
     --dataset_name $DATASET_NAME \
-    --video_frame_rate 1 \
+    --max_frames 16 \
+    --slice_framepos 2 \
+    --frame_order 0 \
     --loss_names ${loss}+sr${select_ratio}_tau${tau}_margin${margin}_n${noisy_rate}  \
-    --num_epoch 60 
- 
+    --num_epoch 60

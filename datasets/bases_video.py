@@ -12,8 +12,59 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset
 
-
 def inject_noisy_correspondence(dataset, noisy_rate, noisy_file=None):
+    logger = logging.getLogger("RDE.dataset")
+    nums = len(dataset)
+    # 复制一份用来读取 fields
+    dataset_copy = dataset.copy()
+    captions    = [item[3] for item in dataset_copy]
+    video_ids   = [item[1] for item in dataset_copy]
+    video_paths = [item[2] for item in dataset_copy]
+    pids        = [item[0] for item in dataset_copy]
+
+    # 默认 identity mapping
+    noisy_inx = np.arange(nums, dtype=int)
+    if noisy_rate > 0:
+        random.seed(123)
+        # 如果存在 noisy_file，就尝试加载
+        if noisy_file and os.path.exists(noisy_file):
+            loaded = np.load(noisy_file)
+            if loaded.shape[0] == nums:
+                noisy_inx = loaded.astype(int)
+                logger.info(f"=> Loaded noisy index from {noisy_file}")
+            else:
+                logger.warning(
+                    f"noisy_file length {loaded.shape[0]} ≠ dataset length {nums}, regenerating."
+                )
+        # 如果没加载到合法文件，就重新生成一份
+        if not (noisy_inx.shape[0] == nums and set(noisy_inx) <= set(range(nums))):
+            # 随机打乱比例为 noisy_rate 的样本
+            idxs = np.arange(nums)
+            np.random.shuffle(idxs)
+            c_noisy = idxs[: int(noisy_rate * nums)]
+            shuffled = c_noisy.copy()
+            np.random.shuffle(shuffled)
+            noisy_inx = np.arange(nums, dtype=int)
+            noisy_inx[c_noisy] = shuffled
+            if noisy_file:
+                np.save(noisy_file, noisy_inx)
+
+    # 防御性：保证所有索引落在 [0, nums-1]
+    noisy_inx = np.clip(noisy_inx, 0, nums - 1).astype(int)
+
+    real_flags = []
+    for i in range(nums):
+        real_flags.append(1 if noisy_inx[i] == i else 0)
+        # 重新组装 tuple
+        dataset[i] = (pids[i], video_ids[i], video_paths[i], captions[noisy_inx[i]])
+
+    logger.info(f"First 10 real_correspondences: {real_flags[:10]}")
+    logger.info(f"=> Noisy rate={noisy_rate}: clean={sum(real_flags)}, "
+                f"noisy={nums-sum(real_flags)}, total={nums}")
+    return dataset, np.array(real_flags, dtype=int)
+
+
+def inject_noisy_correspondence_0(dataset, noisy_rate, noisy_file=None):
     logger = logging.getLogger("RDE.dataset")
     nums = len(dataset)
     dataset_copy = dataset.copy()
@@ -126,24 +177,45 @@ def extract_frames(video_path, target_fps=3, resize=(224, 224)):
     cap.release()
     return frames
 
-
 class VideoTextDataset(Dataset):
-    def __init__(self, dataset, args, transform=None, text_length: int = 77, truncate: bool = True):
+    """视频-文本检索训练集，按最大帧数截取 + 顺序打乱方式提取帧。"""
+    def __init__(
+        self,
+        dataset,
+        args,
+        transform=None,
+        text_length: int = 77,
+        truncate: bool = True
+    ):
         """
-        dataset: 列表，每个元素格式为 (pid, video_id, video_path, caption)
-        args: 参数对象，其中需要包含：
-             - txt_aug: 是否对文本进行增强
-             - video_frame_rate: 提取视频帧的目标帧率
-             - noisy_rate, noisy_file 等（噪声注入相关）
-        transform: 用于预处理视频帧（例如调整尺寸、归一化）的 transform
+        dataset: 列表，每个元素 (pid, video_id, video_path, caption)
+        args: 需要包含以下属性
+            - max_frames: int       最大帧数
+            - slice_framepos: int   0=head 截断，1=tail 截断，2=均匀抽取
+            - frame_order: int      0=原序，1=反序，2=随机
+            - txt_aug: bool         文本增强开关
+            - noisy_rate, noisy_file: 噪声注入参数
+        transform: 对每帧的图像变换
+        text_length: 文本最大长度
+        truncate: 是否截断超长文本
         """
         self.dataset = dataset
         self.transform = transform
         self.text_length = text_length
         self.truncate = truncate
         self.txt_aug = args.txt_aug
-        self.video_frame_rate = args.video_frame_rate
-        self.dataset, self.real_correspondences = inject_noisy_correspondence(dataset, args.noisy_rate, args.noisy_file)
+
+        # 新增参数
+        self.max_frames     = args.max_frames
+        self.slice_framepos = args.slice_framepos
+        self.frame_order    = args.frame_order
+
+        # 注入噪声（返回修改后的 dataset 以及 real_correspondences 数组）
+        self.dataset, self.real_correspondences = inject_noisy_correspondence(
+            dataset, args.noisy_rate, args.noisy_file
+        )
+
+        # 文本分词器
         self.tokenizer = SimpleTokenizer()
 
     def __len__(self):
@@ -151,53 +223,66 @@ class VideoTextDataset(Dataset):
 
     def __getitem__(self, index):
         pid, video_id, video_path, caption = self.dataset[index]
-        try:
-            frames = extract_frames(video_path, target_fps=self.video_frame_rate)
-            if len(frames) == 0:
-                raise RuntimeError(f"No frames extracted from {video_path}")
-        except Exception as e:
-            # 可以记录日志，这里简单打印错误
-            print(f"Error extracting frames from {video_path}: {e}")
-            # 如果出错，返回一个全零的dummy tensor，形状按照你的预期（例如1帧）
-            #dummy = torch.zeros(1, 3, 384, 128)
-            #frames = [dummy]
-            # 注意：如果你返回 dummy 需要确保下游处理能够容忍这种情况
 
+        # 1. 抽取所有帧，不按帧率过滤
+        frames = extract_frames(video_path)
+
+        # 2. 超出最大帧数时按 slice_framepos 截取
+        L = len(frames)
+        if L > self.max_frames:
+            if self.slice_framepos == 0:
+                frames = frames[:self.max_frames]
+            elif self.slice_framepos == 1:
+                frames = frames[-self.max_frames:]
+            else:
+                idxs = np.linspace(0, L - 1, num=self.max_frames, dtype=int)
+                frames = [frames[i] for i in idxs]
+
+        # 3. 根据 frame_order 调整顺序
+        if self.frame_order == 1:
+            frames = frames[::-1]
+        elif self.frame_order == 2:
+            random.shuffle(frames)
+
+        # 4. 图像变换 & Tensor 化
         if self.transform is not None:
-            # 如果frames是PIL图像，则对每一帧应用transform；
-            # 如果是dummy tensor，则跳过transform（或自行转换）
-            try:
-                frames = [self.transform(img) for img in frames]
-            except Exception as e:
-                print(f"Transform error: {e}")
-                frames = frames  # 保持原样
-        # 如果 frames 仍为 list of tensors，则堆叠它们
-        try:
-            video_tensor = torch.stack(frames)
-        except Exception as e:
-            print(f"Stack error for {video_path}: {e}")
-            video_tensor = frames[0].unsqueeze(0)
+            frames = [self.transform(img) for img in frames]
 
-        caption_tokens = tokenize(caption, tokenizer=self.tokenizer, text_length=self.text_length,
-                                  truncate=self.truncate)
+        # 若帧列表为空，填充一个全零 tensor 保证 downstream 不崩
+        if len(frames) == 0:
+            # 假设 transform 最后一项是 ToTensor，且已知 C/H/W
+            C, H, W = 3, self.transform.transforms[0].size[1], self.transform.transforms[0].size[0]
+            frames = [torch.zeros(C, H, W)]
+
+        video_tensor = torch.stack(frames, dim=0)  # [T, C, H, W]
+
+        # 5. 文本 tokenize
+        caption_tokens = tokenize(
+            caption,
+            tokenizer=self.tokenizer,
+            text_length=self.text_length,
+            truncate=self.truncate
+        )
         if self.txt_aug:
+            # txt_data_aug 方法与之前保持一致
             caption_tokens = self.txt_data_aug(caption_tokens.cpu().numpy())
-        ret = {
+
+        return {
             'pids': pid,
             'video_ids': video_id,
             'videos': video_tensor,
             'caption_ids': caption_tokens,
             'index': index,
         }
-        return ret
 
     def txt_data_aug(self, tokens):
+        """与原逻辑一样的文本增强方法。"""
         mask = self.tokenizer.encoder["<|mask|>"]
         token_range = list(range(1, len(self.tokenizer.encoder) - 3))
         new_tokens = np.zeros_like(tokens)
         aug_tokens = []
-        for i, token in enumerate(tokens):
-            if 0 < token < 49405:
+        for token in tokens:
+            if 0 < token < len(self.tokenizer.encoder) - 3:
                 prob = random.random()
                 if prob < 0.20:
                     prob /= 0.20
@@ -206,14 +291,14 @@ class VideoTextDataset(Dataset):
                     elif prob < 0.8:
                         aug_tokens.append(random.choice(token_range))
                     else:
-                        None
+                        # 20% 概率删除该 token: 即不 append
+                        continue
                 else:
-                    aug_tokens.append(tokens[i])
+                    aug_tokens.append(token)
             else:
-                aug_tokens.append(tokens[i])
-        new_tokens[0:len(aug_tokens)] = np.array(aug_tokens)
-        return torch.tensor(new_tokens)
-
+                aug_tokens.append(token)
+        new_tokens[:len(aug_tokens)] = np.array(aug_tokens)
+        return torch.tensor(new_tokens, dtype=torch.long)
 
 class VideoTextDataset_0(Dataset):
     def __init__(self, dataset, args, transform=None, text_length: int = 77, truncate: bool = True):

@@ -92,7 +92,7 @@ def compute_rbs(i_feats, t_feats, i_tse_f, t_tse_f, pid, label_hat=None, tau=0.0
         return loss_bgm, loss_tse
     else:
         return loss_bgm / label_hat.sum(), loss_tse / label_hat.sum()  # mean
-    
+
 def compute_per_loss(image_features, text_features, pid, tau=0.02, margin=0.2, loss_type='TAL', logit_scale=50):
     
     # # normalized features

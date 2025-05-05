@@ -114,67 +114,7 @@ def split_prob(prob, threshld):
     pred = (prob > threshld)
     return (pred+0)
 
-'''
-def get_loss(model, data_loader):
-    logger = logging.getLogger("RDE.train")
-    model.eval()
-    device = "cuda"
-    data_size = data_loader.dataset.__len__()
-    real_labels = data_loader.dataset.real_correspondences
-    lossA, lossB, simsA,simsB = torch.zeros(data_size), torch.zeros(data_size), torch.zeros(data_size),torch.zeros(data_size)
-    for i, batch in enumerate(data_loader):
-        batch = {k: v.to(device) for k, v in batch.items()}
-        index = batch['index']
-        with torch.no_grad(): 
-            la, lb, sa, sb = model.compute_per_loss(batch)
 
-            
-            for b in range(la.size(0)):
-                lossA[index[b]]= la[b]
-                lossB[index[b]]= lb[b]
-                simsA[index[b]]= sa[b]
-                simsB[index[b]]= sb[b]
-            if i % 100 == 0:
-                logger.info(f'compute loss batch {i}')
-
-
-    # 再打印全局统计信息
-    logger.info(
-        f"Global lossA - min: {lossA.min().item():.4f}, max: {lossA.max().item():.4f}, mean: {lossA.mean().item():.4f}")
-    logger.info(
-        f"Global lossB - min: {lossB.min().item():.4f}, max: {lossB.max().item():.4f}, mean: {lossB.mean().item():.4f}")
-
-    eps = 1e-8
-    losses_A = (lossA-lossA.min())/(lossA.max()-lossA.min()+eps)
-    losses_B = (lossB-lossB.min())/(lossB.max()-lossB.min()+eps)
-    
-    input_loss_A = losses_A.reshape(-1,1) 
-    input_loss_B = losses_B.reshape(-1,1)
- 
-    logger.info('\nFitting GMM ...') 
- 
-    if model.args.noisy_rate > 0.4 or model.args.dataset_name=='RSTPReid':
-        # should have a better fit 
-        gmm_A = GaussianMixture(n_components=2, max_iter=100, tol=1e-4, reg_covar=1e-6)
-        gmm_B = GaussianMixture(n_components=2, max_iter=100, tol=1e-4, reg_covar=1e-6)
-    else:
-        gmm_A = GaussianMixture(n_components=2, max_iter=10, tol=1e-2, reg_covar=5e-4)
-        gmm_B = GaussianMixture(n_components=2, max_iter=10, tol=1e-2, reg_covar=5e-4)
-
-    gmm_A.fit(input_loss_A.cpu().numpy())
-    prob_A = gmm_A.predict_proba(input_loss_A.cpu().numpy())
-    prob_A = prob_A[:, gmm_A.means_.argmin()]
-
-    gmm_B.fit(input_loss_B.cpu().numpy())
-    prob_B = gmm_B.predict_proba(input_loss_B.cpu().numpy())
-    prob_B = prob_B[:, gmm_B.means_.argmin()]
- 
- 
-    pred_A = split_prob(prob_A, 0.5)
-    pred_B = split_prob(prob_B, 0.5)
-  
-    return torch.Tensor(pred_A), torch.Tensor(pred_B)
-'''
 
 def get_loss(model, data_loader):
     logger = logging.getLogger("RDE.train")
