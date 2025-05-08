@@ -180,7 +180,7 @@ def build_dataloader(args, transforms=None):
         #val_vid_set = VideoDataset(ds['video_pids'], ds['video_paths'], transform=val_transforms, max_frames=args.max_frames)
 
         val_txt_set = TextDataset(ds['caption_pids'], ds['captions'], text_length=args.text_length)
-        val_vid_loader = DataLoader(val_vid_set, batch_size=args.batch_size, shuffle=False, num_workers=num_workers)
+        val_vid_loader = DataLoader(val_vid_set, batch_size=args.batch_size, shuffle=False, num_workers=num_workers, collate_fn=collate)
         val_txt_loader = DataLoader(val_txt_set, batch_size=args.batch_size, shuffle=False, num_workers=num_workers)
         return train_loader, val_vid_loader, val_txt_loader, num_classes
 
@@ -194,7 +194,7 @@ def build_dataloader(args, transforms=None):
         #test_vid_set = VideoDataset(ds['video_pids'], ds['video_paths'], transform=test_transforms, max_frames=args.max_frames)
 
         test_txt_set = TextDataset(ds['caption_pids'], ds['captions'], text_length=args.text_length)
-        test_vid_loader = DataLoader(test_vid_set, batch_size=args.test_batch_size, shuffle=False, num_workers=num_workers)
+        test_vid_loader = DataLoader(test_vid_set, batch_size=args.test_batch_size, shuffle=False, num_workers=num_workers, collate_fn=collate)
         test_txt_loader = DataLoader(test_txt_set, batch_size=args.test_batch_size, shuffle=False, num_workers=num_workers)
         return test_vid_loader, test_txt_loader, num_classes
 
